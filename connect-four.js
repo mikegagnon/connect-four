@@ -68,7 +68,10 @@ class ConnectFour {
         assert(row >= 0 && row < this.numRows);
         assert(col >= 0 && col < this.numCols);
 
-        if (this.matrix[row][col] != EMPTY || this.victor != undefined) {
+        if (this.matrix[row][col] != EMPTY ||
+            this.victor != undefined ||
+            (row < this.numRows - 1 && this.matrix[row + 1][col] == EMPTY))
+            {
             return new Move(false, undefined, undefined, undefined, undefined);
         } 
 
