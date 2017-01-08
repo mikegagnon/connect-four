@@ -8,14 +8,20 @@ PLAYER_ONE = 1;
 PLAYER_TWO = 2;
 
 /*******************************************************************************
- * Snapshot class
+ * Move is the interface between ConnectFour and Viz
  ******************************************************************************/
- class Snapshot {
-    constructor(matrix, gameOver) {
-        this.matrix = matrix;
-        this.gameOver = gameOver;
-        this.numRows = matrix.length;
-        this.numCols = matrix[0].length;
+class Move {
+    // valid == true iff the move results in change in game state
+    // (row, col) are the coordinates that player added their mark
+    // player is either PLAYER_ONE or PLAYER_TWO, depending on who made the move
+    // victor is either undefined (which signifies the game has not concluded)
+    // or victor is PLAYER_ONE or PLAYER_TWO, depending on who won the game
+    constructor(valid, row, col, player, victor) {
+        this.valid = valid;
+        this.row = row;
+        this.col = col;
+        this.player = player;
+        this.victor = victor;
     }
 }
 
@@ -31,13 +37,12 @@ class Viz {
     }
 
     /* Instance methods *******************************************************/
-    constructor(boardId, snapshot, cell_size) {
+    constructor(boardId, numRows, numCols, cell_size) {
         this.boardId = boardId;
-        this.numRows = snapshot.numRows;
-        this.numCols = snapshot.numCols;
+        this.numRows = numRows;
+        this.numCols = numCols;
         this.cell_size = cell_size;
         this.drawCells();
-        this.drawGame(snapshot);
     }
     
     drawCells() {
@@ -63,57 +68,18 @@ class Viz {
         return "<img src='" + filename + "' width='" + this.cell_size + "'>";
     }
 
-    // The snapshot argument defines the game state that is to be drawn on the
-    // web page
-    drawGame(snapshot) {
 
-        $("img").remove();
-
-        for (var row = 0; row < this.numRows; row++) {
-            for (var col = 0; col < this.numCols; col++) {
-                var pieceId = snapshot.matrix[row][col];
-
-                var filename = undefined;
-
-                if (pieceId == PLAYER_ONE) {
-                    filename = "player-1.png";
-                } else if (pieceId == PLAYER_TWO) {
-                    filename = "player-2.png";
-                }
-
-                if (filename != undefined) {
-                    var cellId = "#" + Viz.getCellId(row, col);
-                    var imgTag = this.getImgTag(filename)
-                    $(cellId).append(imgTag);
-                }
-            }
-        }
+    drawMove(move) {
+        // TBD
     }
 }
 
 /*******************************************************************************
  * Controller
  ******************************************************************************/
-var CONNECT_FOUR = undefined; // global variable to hold the ConnectFour class
-var VIZ = undefined;          // global variable to hold the Viz class
-
-
-
-var boardInit =  [
-    [0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 1, 0, 0, 0],
-    [0, 0, 1, 2, 0, 0, 0],
-    [0, 1, 2, 2, 2, 0, 0],
-];
-
-var gameOver = false;
-
-var snapshot = new Snapshot(boardInit, gameOver);
-
+         
 var cell_size = 50;
 
-//SOKOBAN = new Sokoban(snapshot);
-VIZ = new Viz("#board", snapshot, cell_size);
+// Global variable to hold the Viz class
+var VIZ = new Viz("#board", 6, 7, cell_size);
 
