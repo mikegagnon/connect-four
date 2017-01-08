@@ -4,8 +4,15 @@ function assert(condition) {
     }
 }
 
+EMPTY = 0;
+
 PLAYER_ONE = 1;
+PLAYER_ONE_COLOR = "pink";
+PLAYER_ONE_FILENAME = "player-1.png";
+
 PLAYER_TWO = 2;
+PLAYER_TWO_COLOR = "lightblue";
+PLAYER_TWO_FILENAME = "player-2.png";
 
 /*******************************************************************************
  * Move is the interface between ConnectFour and Viz
@@ -24,6 +31,63 @@ class Move {
         this.victor = victor;
     }
 }
+
+/*******************************************************************************
+ * ConnectFour class
+ ******************************************************************************/
+class ConnectFour {
+
+    // player is either PLAYER_ONE or PLAYER_TWO, and indicates which player has
+    // the next move
+    constructor(player, numRows, numCols) {
+        this.numRows = numRows;
+        this.numCols = numCols;
+
+        this.matrix = new Array(this.numRows);
+        for (var row = 0; row < this.numRows; row++) {
+            this.matrix[row] = new Array(this.numCols);
+            for (var col = 0; col < this.numCols; col++) {
+                this.matrix[row][col] = EMPTY;
+            }
+        }
+
+        assert(player == PLAYER_ONE || player == PLAYER_TWO);
+
+        // this.player always equals the player (either PLAYER_ONE or
+        // PLAYER_TWO) who has the next move.
+        this.player = player;
+
+        // If the game is over, then this.victor equals PLAYER_ONE or PLAYER_TWO
+        // depending on who won the game.
+        // If the game is not over, then this.victor == undefined
+        this.victor = undefined;
+    }
+
+    makeMove(row, col) {
+
+        assert(row >= 0 && row < this.numRows);
+        assert(col >= 0 && col < this.numCols);
+
+        if (this.matrix[row][col] != EMPTY || this.victor != undefined) {
+            return new Move(false, undefined, undefined, undefined, undefined);
+        } 
+
+        this.matrix[row][col] = this.player;
+
+        // this.checkGameOver();
+
+        var move = new Move(true, row, col, this.player, this.victor);
+
+        if (this.player == PLAYER_ONE) {
+            this.player = PLAYER_TWO;
+        } else {
+            this.player = PLAYER_ONE;
+        }
+
+        return move;
+    }
+}
+
 
 /*******************************************************************************
  * Viz class
@@ -56,7 +120,10 @@ class Viz {
             for (var col = 0; col < this.numCols; col++) {
 
                 var cellId = Viz.getCellId(row, col);
-                var cellTag = "<div id='" + cellId + "' class='cell'></div>";
+                var cellTag = "<div id='" + cellId + "' " + 
+                              "class='cell' " + 
+                              "onClick='cellClick(" + row + ", " + col +" )'>" +
+                              "</div>";
                 $("#" + rowId).append(cellTag);
                 $("#" + cellId).css("width", this.cell_size);
                 $("#" + cellId).css("height", this.cell_size);
@@ -64,13 +131,37 @@ class Viz {
         }
     }
 
-    getImgTag(filename) {
+    getImgTag(player) {
+
+        var filename = undefined;
+
+        if (player == PLAYER_ONE) {
+            filename = PLAYER_ONE_FILENAME;
+        } else if (player == PLAYER_TWO) {
+            filename = PLAYER_TWO_FILENAME
+        } else {
+            assert(false);
+        }
+
         return "<img src='" + filename + "' width='" + this.cell_size + "'>";
     }
 
 
     drawMove(move) {
-        // TBD
+        if (!move.valid) {
+            return;
+        }
+
+        var cellId = Viz.getCellId(move.row, move.col);
+        var imgTag = this.getImgTag(move.player);
+
+        $("#" + cellId).append(imgTag);
+
+        if (move.victor == PLAYER_ONE) {
+            $(".cell").css("background-color", PLAYER_ONE_COLOR);
+        } else if (move.victor == PLAYER_TWO) {
+            $(".cell").css("background-color", PLAYER_TWO_COLOR);
+        }
     }
 }
 
@@ -80,6 +171,14 @@ class Viz {
          
 var cell_size = 50;
 
+var GAME = new ConnectFour(PLAYER_ONE, 6, 7);
+
 // Global variable to hold the Viz class
 var VIZ = new Viz("#board", 6, 7, cell_size);
 
+function cellClick(row, col) {
+
+    var move = GAME.makeMove(row, col);
+    VIZ.drawMove(move);
+
+}
