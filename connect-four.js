@@ -17,6 +17,9 @@ PLAYER_TWO = 2;
 PLAYER_TWO_COLOR = "lightblue";
 PLAYER_TWO_FILENAME = "player-2.png";
 
+MAXIMIZING_PLAYER = PLAYER_ONE;
+MINIMIZING_PLAYER = PLAYER_TWO;
+
 var FIRST_PLAYER = undefined;
 
 if (Math.random() < 0.5) {
@@ -444,46 +447,30 @@ class Node {
         return count;
     }
 
-    scorePlayer(player) {
+    getNonLeafScore() {
+        var scorePlayerMax =
+            this.countThree(MAXIMIZING_PLAYER) * MIN_MAX_THREE_WEIGHT +
+            this.countTwo(MAXIMIZING_PLAYER);
 
-        var otherPlayer;
+        var scorePlayerMin =
+            this.countThree(MINIMIZING_PLAYER) * MIN_MAX_THREE_WEIGHT +
+            this.countTwo(MINIMIZING_PLAYER);
 
-        if (player == PLAYER_ONE) {
-            otherPlayer = PLAYER_TWO;
-        } else{
-            otherPlayer = PLAYER_ONE;
-        }
-
-        var scoreThisPlayer =
-            this.countThree(player) * MIN_MAX_THREE_WEIGHT +
-            this.countTwo(player);
-
-        var scoreOtherPlayer =
-            this.countThree(otherPlayer) * MIN_MAX_THREE_WEIGHT +
-            this.countTwo(otherPlayer);
-
-        var absoluteScore = scoreThisPlayer - scoreOtherPlayer;
-
-        if (player == PLAYER_ONE) {
-            return absoluteScore;
-        } else {
-            return -1 * absoluteScore;
-        }
-
+        return scorePlayerMax - scorePlayerMin;
     }
 
     // Player One is always the maximizing player
     getScore() {
         if (this.game.gameOver != undefined) {
-            if (this.game.gameOver.victor == PLAYER_ONE) {
+            if (this.game.gameOver.victor == MAXIMIZING_PLAYER) {
                 return Number.MAX_SAFE_INTEGER;
-            } else if (this.game.gameOver.victor == PLAYER_TWO) {
+            } else if (this.game.gameOver.victor == MINIMIZING_PLAYER) {
                 return Number.MIN_SAFE_INTEGER;
             } else {
                 return 0;
             }
         } else {
-            return this.scorePlayer(this.game.player);
+            return this.getNonLeafScore();
         }
     }
 
