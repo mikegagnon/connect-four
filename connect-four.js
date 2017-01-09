@@ -4,7 +4,7 @@ function assert(condition) {
     }
 }
 
-MIN_MAX_DEPTH = 5;
+MIN_MAX_DEPTH = 6;
 
 
 EMPTY = 0;
