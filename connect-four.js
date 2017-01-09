@@ -133,8 +133,6 @@ class ConnectFour {
         }
     }
 
-    // Takes advantage of the fact that this.matrix[outOfBounds][outofBounds]
-    // == undefined
     checkVictorHorizontal(row, col) {
         var a = this.getCellValue(row, col);
         var b = this.getCellValue(row, col + 1);
@@ -142,7 +140,7 @@ class ConnectFour {
         var d = this.getCellValue(row, col + 3);
         if (a == b && a == c && a == d) {
             this.victor = a;
-        };
+        }
     }
 
     checkVictorVertical(row, col) {
@@ -152,7 +150,7 @@ class ConnectFour {
         var d = this.getCellValue(row + 3, col);
         if (a == b && a == c && a == d) {
             this.victor = a;
-        };
+        }
     }
 
     checkVictorDiagonal(row, col) {
@@ -162,7 +160,7 @@ class ConnectFour {
         var d = this.getCellValue(row + 3, col + 3);
         if (a == b && a == c && a == d) {
             this.victor = a;
-        };
+        }
 
         var a = this.getCellValue(row, col);
         var b = this.getCellValue(row + 1, col - 1);
@@ -170,7 +168,7 @@ class ConnectFour {
         var d = this.getCellValue(row + 3, col - 3);
         if (a == b && a == c && a == d) {
             this.victor = a;
-        };
+        }
     }
 
 
@@ -226,45 +224,126 @@ class Node {
         return this.game.victor != undefined || this.game.draw != undefined; 
     }
 
-    numAdjacent(player) {
 
+    countThreeHorizontal(player, row, col) {
+        var a = this.game.getCellValue(row, col);
+        var b = this.game.getCellValue(row, col + 1);
+        var c = this.game.getCellValue(row, col + 2);
+        if (a == player && a == b && a == c) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
+    countThreeVertical(player, row, col) {
+        var a = this.game.getCellValue(row, col);
+        var b = this.game.getCellValue(row + 1, col);
+        var c = this.game.getCellValue(row + 2, col);
+        if (a == player && a == b && a == c) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
+    countThreeDiagonal(player, row, col) {
         var count = 0;
 
-        for (var row = 0; row < this.numRows; row++) {
-            for (var col = 0; col < this.numCols; col++) {
-                if (this.game.getCellValue(row, col) == player) {
+        var a = this.game.getCellValue(row, col);
+        var b = this.game.getCellValue(row + 1, col + 1);
+        var c = this.game.getCellValue(row + 2, col + 2);
+        if (a == player && a == b && a == c) {
+            count += 1;
+        }
 
-                    if (this.game.getCellValue(row + 1, col) == player) {
-                        count += 1;
-                    }
+        var a = this.game.getCellValue(row, col);
+        var b = this.game.getCellValue(row + 1, col - 1);
+        var c = this.game.getCellValue(row + 2, col - 2);
+        if (a == player && a == b && a == c) {
+            count += 1;
+        }
 
-                    if (this.game.getCellValue(row, col + 1) == player) {
-                        count += 1;
-                    }
+        return count;
+    }
 
-                    if (this.game.getCellValue(row + 1, col + 1) == player) {
-                        count += 1;
-                    }
 
-                }
+    countTwoHorizontal(player, row, col) {
+        var a = this.game.getCellValue(row, col);
+        var b = this.game.getCellValue(row, col + 1);
+        if (a == player && a == b) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
+    countTwoVertical(player, row, col) {
+        var a = this.game.getCellValue(row, col);
+        var b = this.game.getCellValue(row + 1, col);
+        if (a == player && a == b) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
+    countTwoDiagonal(player, row, col) {
+        var count = 0;
+
+        var a = this.game.getCellValue(row, col);
+        var b = this.game.getCellValue(row + 1, col + 1);
+        if (a == player && a == b) {
+            count += 1;
+        }
+
+        var a = this.game.getCellValue(row, col);
+        var b = this.game.getCellValue(row + 1, col - 1);
+        if (a == player && a == b) {
+            count += 1;
+        }
+
+        return count;
+    }
+
+    countThree(player) {
+        var count = 0;
+
+        for (var row = 0; row < this.game.numRows; row++) {
+            for (var col = 0; col < this.game.numCols; col++) {
+                count += this.countThreeHorizontal(player, row, col) +
+                         this.countThreeVertical(player, row, col) +
+                         this.countThreeDiagonal(player, row, col);
             }
         }
 
         return count;
-
     }
 
-    countDiff(player) {
+    countTwo(player) {
+        var count = 0;
 
-        var otherPlayer = undefined;
-
-        if (player == PLAYER_ONE) {
-            otherPlayer = PLAYER_TWO;
-        } else {
-            otherPlayer = PLAYER_ONE;
+        for (var row = 0; row < this.game.numRows; row++) {
+            for (var col = 0; col < this.game.numCols; col++) {
+                count += this.countTwoHorizontal(player, row, col) +
+                         this.countTwoVertical(player, row, col) +
+                         this.countTwoDiagonal(player, row, col);
+            }
         }
 
-        return this.numAdjacent(player) - this.numAdjacent(otherPlayer);
+        return count;
+    }
+
+    scorePlayer(player) {
+
+        var absoluteScore = this.countThree(player) * 6 + this.countTwo(player);
+
+        if (player == PLAYER_ONE) {
+            return absoluteScore;
+        } else {
+            return -1 * absoluteScore;
+        }
+
     }
 
     // Player One is always the maximizing player
@@ -276,10 +355,8 @@ class Node {
             return Number.MAX_SAFE_INTEGER;
         } else if (this.game_victor == PLAYER_TWO) {
             return Number.MIN_SAFE_INTEGER;
-        } else if (this.game.player == PLAYER_ONE) {
-            return this.numAdjacent(PLAYER_ONE);
         } else {
-            return -1 * this.numAdjacent(PLAYER_TWO);
+            return this.scorePlayer(this.game.player);
         }
     }
 
