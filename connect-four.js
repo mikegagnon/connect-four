@@ -4,7 +4,7 @@ function assert(condition) {
     }
 }
 
-MIN_MAX_DEPTH = 1;
+MIN_MAX_DEPTH = 5;
 
 
 EMPTY = 0;
@@ -226,16 +226,60 @@ class Node {
         return this.game.victor != undefined || this.game.draw != undefined; 
     }
 
+    numAdjacent(player) {
+
+        var count = 0;
+
+        for (var row = 0; row < this.numRows; row++) {
+            for (var col = 0; col < this.numCols; col++) {
+                if (this.game.getCellValue(row, col) == player) {
+
+                    if (this.game.getCellValue(row + 1, col) == player) {
+                        count += 1;
+                    }
+
+                    if (this.game.getCellValue(row, col + 1) == player) {
+                        count += 1;
+                    }
+
+                    if (this.game.getCellValue(row + 1, col + 1) == player) {
+                        count += 1;
+                    }
+
+                }
+            }
+        }
+
+        return count;
+
+    }
+
+    countDiff(player) {
+
+        var otherPlayer = undefined;
+
+        if (player == PLAYER_ONE) {
+            otherPlayer = PLAYER_TWO;
+        } else {
+            otherPlayer = PLAYER_ONE;
+        }
+
+        return this.numAdjacent(player) - this.numAdjacent(otherPlayer);
+    }
+
     // Player One is always the maximizing player
     getScore() {
-        assert(this.isLeaf());
 
-        if (this.game.victor == undefined) {
+        if (this.game.draw == true) {
             return 0;
         } else if (this.game.victor == PLAYER_ONE) {
-            return 1;
+            return Number.MAX_SAFE_INTEGER;
+        } else if (this.game_victor == PLAYER_TWO) {
+            return Number.MIN_SAFE_INTEGER;
+        } else if (this.game.player == PLAYER_ONE) {
+            return this.numAdjacent(PLAYER_ONE);
         } else {
-            return -1;
+            return -1 * this.numAdjacent(PLAYER_TWO);
         }
     }
 
