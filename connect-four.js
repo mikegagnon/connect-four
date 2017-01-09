@@ -23,12 +23,13 @@ class Move {
     // player is either PLAYER_ONE or PLAYER_TWO, depending on who made the move
     // victor is either undefined (which signifies the game has not concluded)
     // or victor is PLAYER_ONE or PLAYER_TWO, depending on who won the game
-    constructor(valid, row, col, player, victor) {
+    constructor(valid, row, col, player, victor, draw) {
         this.valid = valid;
         this.row = row;
         this.col = col;
         this.player = player;
         this.victor = victor;
+        this.draw = draw;
     }
 }
 
@@ -75,14 +76,16 @@ class ConnectFour {
             this.victor != undefined ||
             (row < this.numRows - 1 && this.matrix[row + 1][col] == EMPTY))
             {
-            return new Move(false, undefined, undefined, undefined, undefined);
+            return new Move(false, undefined, undefined, undefined, undefined,
+                undefined);
         } 
 
         this.matrix[row][col] = this.player;
 
         this.checkGameOver();
 
-        var move = new Move(true, row, col, this.player, this.victor);
+        var move =
+            new Move(true, row, col, this.player, this.victor, this.draw);
 
         if (this.player == PLAYER_ONE) {
             this.player = PLAYER_TWO;
@@ -268,7 +271,6 @@ var VIZ = new Viz("#board", 6, 7, cell_size);
 function cellClick(row, col) {
 
     var move = GAME.makeMove(row, col);
-    console.log(move);
     VIZ.drawMove(move);
 
 }
