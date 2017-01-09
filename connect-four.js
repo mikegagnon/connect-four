@@ -474,10 +474,10 @@ class Node {
 
     // Player One is always the maximizing player
     getScore() {
-        if (this.gameOver != undefined) {
-            if (this.gameOver.victor == PLAYER_ONE) {
+        if (this.game.gameOver != undefined) {
+            if (this.game.gameOver.victor == PLAYER_ONE) {
                 return Number.MAX_SAFE_INTEGER;
-            } else if (this.gameOver.victor == PLAYER_TWO) {
+            } else if (this.game.gameOver.victor == PLAYER_TWO) {
                 return Number.MIN_SAFE_INTEGER;
             } else {
                 return 0;
