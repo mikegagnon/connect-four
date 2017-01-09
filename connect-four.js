@@ -129,7 +129,7 @@ class ConnectFour {
             col < this.numCols) {
             return this.matrix[row][col];
         } else {
-            return EMPTY;
+            return undefined;
         }
     }
 
@@ -226,10 +226,14 @@ class Node {
 
 
     countThreeHorizontal(player, row, col) {
+        var beforeA = this.game.getCellValue(row, col -1);
         var a = this.game.getCellValue(row, col);
         var b = this.game.getCellValue(row, col + 1);
         var c = this.game.getCellValue(row, col + 2);
-        if (a == player && a == b && a == c) {
+        var afterC = this.game.getCellValue(row, col + 3);
+
+        if (a == player && a == b && a == c &&
+            (beforeA == EMPTY || afterC == EMPTY)) {
             return 1;
         } else {
             return 0;
@@ -237,10 +241,14 @@ class Node {
     }
 
     countThreeVertical(player, row, col) {
+        var beforeA = this.game.getCellValue(row - 1, col);
         var a = this.game.getCellValue(row, col);
         var b = this.game.getCellValue(row + 1, col);
         var c = this.game.getCellValue(row + 2, col);
-        if (a == player && a == b && a == c) {
+        var afterC = this.game.getCellValue(row + 3, col);
+
+        if (a == player && a == b && a == c &&
+            (beforeA == EMPTY || afterC == EMPTY)) {
             return 1;
         } else {
             return 0;
@@ -250,17 +258,23 @@ class Node {
     countThreeDiagonal(player, row, col) {
         var count = 0;
 
+        var beforeA = this.game.getCellValue(row - 1, col - 1);
         var a = this.game.getCellValue(row, col);
         var b = this.game.getCellValue(row + 1, col + 1);
         var c = this.game.getCellValue(row + 2, col + 2);
-        if (a == player && a == b && a == c) {
+        var afterC = this.game.getCellValue(row + 3, col + 3);
+        if (a == player && a == b && a == c &&
+            (beforeA == EMPTY || afterC == EMPTY)) {
             count += 1;
         }
 
+        var beforeA = this.game.getCellValue(row - 1, col + 1);
         var a = this.game.getCellValue(row, col);
         var b = this.game.getCellValue(row + 1, col - 1);
         var c = this.game.getCellValue(row + 2, col - 2);
-        if (a == player && a == b && a == c) {
+        var afterC = this.game.getCellValue(row + 3, col - 3);
+        if (a == player && a == b && a == c &&
+            (beforeA == EMPTY || afterC == EMPTY)) {
             count += 1;
         }
 
@@ -571,7 +585,6 @@ var GAME = new ConnectFour(FIRST_PLAYER, 6, 7);
 var VIZ = new Viz("#board", 6, 7, cell_size);
 
 if (FIRST_PLAYER == PLAYER_TWO) {
-    console.log("ASDF")
     move = makeAiMove(GAME);
     VIZ.drawMove(move);
 }
@@ -582,10 +595,14 @@ function cellClick(row, col) {
     VIZ.drawMove(move);
 
     if (move.valid && GAME.victor == undefined && GAME.draw == undefined) {
-        move = makeAiMove(GAME);
-        VIZ.drawMove(move);
+
+        function doAiMove() {
+            move = makeAiMove(GAME);
+            VIZ.drawMove(move);            
+        }
+
+        // NOTE: this introduces a race condition
+        window.setTimeout(doAiMove, 100);
     }
-
-
 }
 
