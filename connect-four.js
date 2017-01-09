@@ -283,9 +283,19 @@ class Node {
 
 
     countTwoHorizontal(player, row, col) {
+        var beforeBeforeA = this.game.getCellValue(row, col - 2);
+        var beforeA = this.game.getCellValue(row, col - 1);
         var a = this.game.getCellValue(row, col);
         var b = this.game.getCellValue(row, col + 1);
-        if (a == player && a == b) {
+        var afterB = this.game.getCellValue(row, col + 2);
+        var afterAfterB = this.game.getCellValue(row, col + 3);
+
+        var goodSpacing =
+            (beforeA == EMPTY && beforeBeforeA == EMPTY) ||
+            (beforeA == EMPTY && afterB == EMPTY) ||
+            (afterB == EMPTY && afterAfterB == EMPTY);
+
+        if (a == player && a == b && goodSpacing) {
             return 1;
         } else {
             return 0;
@@ -293,9 +303,19 @@ class Node {
     }
 
     countTwoVertical(player, row, col) {
+        var beforeBeforeA = this.game.getCellValue(row - 2, col);
+        var beforeA = this.game.getCellValue(row - 1, col);
         var a = this.game.getCellValue(row, col);
         var b = this.game.getCellValue(row + 1, col);
-        if (a == player && a == b) {
+        var afterB = this.game.getCellValue(row + 2, col);
+        var afterAfterB = this.game.getCellValue(row + 3, col);
+
+        var goodSpacing =
+            (beforeA == EMPTY && beforeBeforeA == EMPTY) ||
+            (beforeA == EMPTY && afterB == EMPTY) ||
+            (afterB == EMPTY && afterAfterB == EMPTY);
+
+        if (a == player && a == b && goodSpacing) {
             return 1;
         } else {
             return 0;
@@ -305,15 +325,35 @@ class Node {
     countTwoDiagonal(player, row, col) {
         var count = 0;
 
+        var beforeBeforeA = this.game.getCellValue(row - 2, col -2);
+        var beforeA = this.game.getCellValue(row - 1, col - 1);
         var a = this.game.getCellValue(row, col);
         var b = this.game.getCellValue(row + 1, col + 1);
-        if (a == player && a == b) {
+        var afterB = this.game.getCellValue(row + 2, col + 2);
+        var afterAfterB = this.game.getCellValue(row + 3, col + 3);
+
+        var goodSpacing =
+            (beforeA == EMPTY && beforeBeforeA == EMPTY) ||
+            (beforeA == EMPTY && afterB == EMPTY) ||
+            (afterB == EMPTY && afterAfterB == EMPTY);
+
+        if (a == player && a == b && goodSpacing) {
             count += 1;
         }
 
+        var beforeBeforeA = this.game.getCellValue(row - 2, col +2);
+        var beforeA = this.game.getCellValue(row - 1, col + 1);
         var a = this.game.getCellValue(row, col);
         var b = this.game.getCellValue(row + 1, col - 1);
-        if (a == player && a == b) {
+        var afterB = this.game.getCellValue(row + 2, col - 2);
+        var afterAfterB = this.game.getCellValue(row + 3, col - 3);
+
+        var goodSpacing =
+            (beforeA == EMPTY && beforeBeforeA == EMPTY) ||
+            (beforeA == EMPTY && afterB == EMPTY) ||
+            (afterB == EMPTY && afterAfterB == EMPTY);
+
+        if (a == player && a == b && goodSpacing) {
             count += 1;
         }
 
