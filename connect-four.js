@@ -5,7 +5,7 @@ function assert(condition) {
 }
 
 MIN_MAX_DEPTH = 6;
-
+MIN_MAX_THREE_WEIGHT = 10;
 
 EMPTY = 0;
 
@@ -336,7 +336,23 @@ class Node {
 
     scorePlayer(player) {
 
-        var absoluteScore = this.countThree(player) * 6 + this.countTwo(player);
+        var otherPlayer;
+
+        if (player == PLAYER_ONE) {
+            otherPlayer = PLAYER_TWO;
+        } else{
+            otherPlayer = PLAYER_ONE;
+        }
+
+        var scoreThisPlayer =
+            this.countThree(player) * MIN_MAX_THREE_WEIGHT +
+            this.countTwo(player);
+
+        var scoreOtherPlayer =
+            this.countThree(otherPlayer) * MIN_MAX_THREE_WEIGHT +
+            this.countTwo(otherPlayer);
+
+        var absoluteScore = scoreThisPlayer - scoreOtherPlayer;
 
         if (player == PLAYER_ONE) {
             return absoluteScore;
