@@ -67,6 +67,21 @@ class ConnectFour {
         this.draw = undefined;
     }
 
+    deepCopy() {
+        var newGame = new ConnectFour(this.player, this.numRows, this.numCols);
+
+        for (var row = 0; row < this.numRows; row++) {
+            for (var col = 0; col < this.numCols; col++) {
+                newGame.matrix[row][col] = this.matrix[row][col];
+            }
+        }
+
+        newGame.victor = this.victor;
+        newGame.draw = this.draw;
+
+        return newGame;
+    }
+
     makeMove(row, col) {
 
         assert(row >= 0 && row < this.numRows);
@@ -180,6 +195,65 @@ class ConnectFour {
     }
 }
 
+
+/*******************************************************************************
+ * Node class
+ ******************************************************************************/
+
+class Node {
+
+    constructor(game, move = undefined) {
+        this.game = game;
+        this.move = move;
+    }
+
+    getMove() {
+        return this.move;
+    }
+
+    isLeaf() {
+        return this.game.victor != undefined || this.game.draw != undefined; 
+    }
+
+    // Player One is always the maximizing player
+    getScore() {
+        assert(this.isLeaf());
+
+        if (this.game.victor == undefined) {
+            return 0;
+        } else if (this.game.victor == PLAYER_ONE) {
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+
+    // Recall, in a game tree every node (except a leaf node)
+    // is a parent. The children of a parent represent
+    // all the possible moves a parent can make.
+    getChildren() {
+
+        var childrenNodes = [];
+
+        for (var row = 0; row < this.game.numRows; row++) {
+            for (var col = 0; col < this.game.numCols; col++) {
+
+                var childGame = this.game.deepCopy();
+
+                var move = childGame.makeMove(row, col);
+
+                if (move.valid) {
+                    var childNode = new Node(childGame, move);
+                    childrenNodes.push(childNode);
+                }
+            }
+        }
+
+        assert(childrenNodes.length > 0);
+
+        return childrenNodes;
+    }
+}
 
 /*******************************************************************************
  * Viz class
