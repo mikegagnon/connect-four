@@ -61,6 +61,9 @@ class ConnectFour {
         // depending on who won the game.
         // If the game is not over, then this.victor == undefined
         this.victor = undefined;
+
+        // TODO: document
+        this.draw = undefined;
     }
 
     makeMove(row, col) {
@@ -77,7 +80,7 @@ class ConnectFour {
 
         this.matrix[row][col] = this.player;
 
-        // this.checkGameOver();
+        this.checkGameOver();
 
         var move = new Move(true, row, col, this.player, this.victor);
 
@@ -88,6 +91,89 @@ class ConnectFour {
         }
 
         return move;
+    }
+
+    getCellValue(row, col) {
+        if (row >= 0 &&
+            row < this.numRows &
+            col >= 0 &
+            col < this.numCols) {
+            return this.matrix[row][col];
+        } else {
+            return EMPTY;
+        }
+    }
+
+    // Takes advantage of the fact that this.matrix[outOfBounds][outofBounds]
+    // == undefined
+    checkVictorHorizontal(row, col) {
+        var a = this.getCellValue(row, col);
+        var b = this.getCellValue(row, col + 1);
+        var c = this.getCellValue(row, col + 2);
+        var d = this.getCellValue(row, col + 3);
+        if (a == b && a == c && a == d) {
+            this.victor = a;
+        };
+    }
+
+    checkVictorVertical(row, col) {
+        var a = this.getCellValue(row, col);
+        var b = this.getCellValue(row + 1, col);
+        var c = this.getCellValue(row + 2, col);
+        var d = this.getCellValue(row + 3, col);
+        if (a == b && a == c && a == d) {
+            this.victor = a;
+        };
+    }
+
+    checkVictorDiagonal(row, col) {
+        var a = this.getCellValue(row, col);
+        var b = this.getCellValue(row + 1, col + 1);
+        var c = this.getCellValue(row + 2, col + 2);
+        var d = this.getCellValue(row + 3, col + 3);
+        if (a == b && a == c && a == d) {
+            this.victor = a;
+        };
+
+        var a = this.getCellValue(row, col);
+        var b = this.getCellValue(row + 1, col - 1);
+        var c = this.getCellValue(row + 2, col - 2);
+        var d = this.getCellValue(row + 3, col - 3);
+        if (a == b && a == c && a == d) {
+            this.victor = a;
+        };
+    }
+
+
+    checkVictor(row, col) {
+        this.checkVictorHorizontal(row, col);
+        this.checkVictorVertical(row, col);
+        this.checkVictorDiagonal(row, col);
+    }
+
+    checkDraw() {
+        for (var row = 0; row < this.numRows; row++) {
+            for (var col = 0; col < this.numCols; col++) {
+                if (this.matrix[row][col] == EMPTY) {
+                    return;
+                }
+            }
+        }
+
+        this.draw = true;
+    }
+
+    checkGameOver() {
+
+        this.checkDraw();
+
+        for (var row = 0; row < this.numRows; row++) {
+            for (var col =0; col < this.numCols; col++) {
+                if (this.matrix[row][col] != EMPTY) {
+                    this.checkVictor(row, col);
+                }
+            }
+        }
     }
 }
 
@@ -182,6 +268,7 @@ var VIZ = new Viz("#board", 6, 7, cell_size);
 function cellClick(row, col) {
 
     var move = GAME.makeMove(row, col);
+    console.log(move);
     VIZ.drawMove(move);
 
 }
