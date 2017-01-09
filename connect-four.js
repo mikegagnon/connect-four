@@ -20,6 +20,8 @@ PLAYER_TWO_FILENAME = "player-2.png";
 MAXIMIZING_PLAYER = PLAYER_ONE;
 MINIMIZING_PLAYER = PLAYER_TWO;
 
+COMPUTER_PLAYER = PLAYER_TWO;
+
 var FIRST_PLAYER = undefined;
 
 if (Math.random() < 0.5) {
@@ -459,7 +461,6 @@ class Node {
         return scorePlayerMax - scorePlayerMin;
     }
 
-    // Player One is always the maximizing player
     getScore() {
         if (this.game.gameOver != undefined) {
             if (this.game.gameOver.victor == MAXIMIZING_PLAYER) {
@@ -669,9 +670,9 @@ function makeAiMove(game) {
 
     var node = new Node(game);
 
-    // The AI is always the PLAYER_TWO player, thus is always the minimizing
-    // player
-    var [bestMove, _] = minMax(node, MIN_MAX_DEPTH, false);
+    var maximizing = MAXIMIZING_PLAYER == COMPUTER_PLAYER;
+
+    var [bestMove, _] = minMax(node, MIN_MAX_DEPTH, maximizing);
 
     return game.makeMove(bestMove.row, bestMove.col);
 }
@@ -687,7 +688,7 @@ var GAME = new ConnectFour(FIRST_PLAYER, 6, 7);
 // Global variable to hold the Viz class
 var VIZ = new Viz("#board", 6, 7, cell_size);
 
-if (FIRST_PLAYER == PLAYER_TWO) {
+if (FIRST_PLAYER == COMPUTER_PLAYER) {
     move = makeAiMove(GAME);
     VIZ.drawMove(move);
 }
@@ -699,12 +700,13 @@ function cellClick(row, col) {
 
     if (move.valid && GAME.gameOver == undefined) {
 
+        // Delay doAiMove() so that the browser has time to draw the human
+        // player's move
         function doAiMove() {
             move = makeAiMove(GAME);
             VIZ.drawMove(move);            
         }
 
-        // NOTE: this introduces a race condition
         window.setTimeout(doAiMove, 100);
     }
 }
