@@ -4,6 +4,9 @@ function assert(condition) {
     }
 }
 
+MIN_MAX_DEPTH = 1;
+
+
 EMPTY = 0;
 
 PLAYER_ONE = 1;
@@ -13,6 +16,14 @@ PLAYER_ONE_FILENAME = "player-1.png";
 PLAYER_TWO = 2;
 PLAYER_TWO_COLOR = "lightblue";
 PLAYER_TWO_FILENAME = "player-2.png";
+
+var FIRST_PLAYER = undefined;
+
+if (Math.random() < 0.5) {
+    FIRST_PLAYER = PLAYER_ONE;
+} else {
+    FIRST_PLAYER = PLAYER_TWO;
+}
 
 /*******************************************************************************
  * Move is the interface between ConnectFour and Viz
@@ -332,19 +343,112 @@ class Viz {
 }
 
 /*******************************************************************************
+ * MinMax function
+ ******************************************************************************/
+
+// Arguments:
+//    node is the node for which we want to calculate its score
+//    maximizingPlayer is true if node wants to maximize its score
+//    maximizingPlayer is false if node wants to minimize its score
+//
+// minMax(node, player) returns the best possible score
+// that the player can achieve from this node
+//
+// node must be an object with the following methods:
+//    node.isLeaf()
+//    node.getScore()
+//    node.getChildren()
+//    node.getMove()
+function minMax(node, depth, maximizingPlayer) {
+    if (node.isLeaf() || depth == 0) {
+        return [node.getMove(), node.getScore()];
+    }
+
+    // If the node wants to maximize its score:
+    if (maximizingPlayer) {
+        var bestScore = Number.MIN_SAFE_INTEGER;
+        var bestMove = undefined;
+
+        // find the child with the highest score
+        var children = node.getChildren();
+        for (var i = 0; i < children.length; i++) {
+            var child = children[i];
+            var [_, childScore] = minMax(child, depth - 1, false);
+            bestScore = Math.max(childScore, bestScore);
+
+            if (bestScore == childScore) {
+                bestMove = child.getMove();
+            }
+
+        }
+        return [bestMove, bestScore];
+    }
+
+    // If the node wants to minimize its score:
+    else {
+        var bestScore = Number.MAX_SAFE_INTEGER;
+        var bestMove = undefined;
+
+        // find the child with the lowest score
+        var children = node.getChildren();
+        for (var i = 0; i < children.length; i++) {
+            var child = children[i];
+            var [_, childScore] = minMax(child, depth -1, true);
+            bestScore = Math.min(childScore, bestScore);
+
+            if (bestScore == childScore) {
+                bestMove = child.getMove();
+            }
+        }
+        return [bestMove, bestScore];
+    }
+}
+
+
+/*******************************************************************************
+ * AI code
+ ******************************************************************************/
+
+function makeAiMove(game) {
+
+    assert(game.victor == undefined && game.draw == undefined);
+
+    var node = new Node(game);
+
+    // The AI is always the PLAYER_TWO player, thus is always the minimizing
+    // player
+    var [bestMove, _] = minMax(node, MIN_MAX_DEPTH, false);
+
+    return game.makeMove(bestMove.row, bestMove.col);
+}
+
+/*******************************************************************************
  * Controller
  ******************************************************************************/
          
 var cell_size = 50;
 
-var GAME = new ConnectFour(PLAYER_ONE, 6, 7);
+var GAME = new ConnectFour(FIRST_PLAYER, 6, 7);
 
 // Global variable to hold the Viz class
 var VIZ = new Viz("#board", 6, 7, cell_size);
+
+if (FIRST_PLAYER == PLAYER_TWO) {
+    console.log("ASDF")
+    move = makeAiMove(GAME);
+    VIZ.drawMove(move);
+}
 
 function cellClick(row, col) {
 
     var move = GAME.makeMove(row, col);
     VIZ.drawMove(move);
 
+    if (move.valid && GAME.victor == undefined && GAME.draw == undefined) {
+        move = makeAiMove(GAME);
+        VIZ.drawMove(move);
+    }
+
+
 }
+
