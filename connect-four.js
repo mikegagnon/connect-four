@@ -32,15 +32,65 @@ class Move {
     // valid == true iff the move results in change in game state
     // (row, col) are the coordinates that player added their mark
     // player is either PLAYER_ONE or PLAYER_TWO, depending on who made the move
-    // victor is either undefined (which signifies the game has not concluded)
-    // or victor is PLAYER_ONE or PLAYER_TWO, depending on who won the game
-    constructor(valid, row, col, player, victor, draw) {
+    // gameOver is either undefined (which signifies the game has not concluded)
+    // or gameOver is a GameOver object, representing the conclusion of the game
+    constructor(valid, row, col, player, gameOver) {
         this.valid = valid;
         this.row = row;
         this.col = col;
         this.player = player;
+        this.gameOver = gameOver;
+    }
+}
+
+/*******************************************************************************
+ * GameOver
+ ******************************************************************************/
+// GameOver objects store information about the end of the game.
+class GameOver {
+
+    // There are two fields in a GameOver object:
+    //      1. this.victor
+    //      2. this.victoryCells
+    //
+    // this.victor
+    // ===========
+    // this.victor is equal to one of the following:
+    //      (A) undefined
+    //      (B) PLAYER_ONE
+    //      (C) PLAYER_TWO
+    //
+    // if this.victor == undefined, then that indicates the game ended in a draw
+    // if this.victor == PLAYER_ONE, then that indicates PLAYER_ONE won the game
+    // if this.victor == PLAYER_TWO, then that indicates PLAYER_TWO won the game
+    //
+    // this.victoryCells
+    // =================
+    // this.victoryCells is either:
+    //      (A) undefined
+    //      (B) a list of four [row, col] pairs
+    //
+    // if this.victoryCells == undefined, then that indicates the game ended in
+    // a draw.
+    //
+    // if this.victoryCells is a list of four [row, col] pairs, then that
+    // indicates the game has ended in a victory. Furthermore the four 
+    // [row, col] pairs indicate which cells contain the winning 4-in-a-row
+    // pieces.
+    // 
+    // As an example: this.victoryCells might equal [[0,0], [1,1], [2, 2],
+    // [3, 3]].
+    // This denotes that (row 0, col 0), (row 1, col 1), (row 2, col 2), and
+    // (row 3, col 3) constitute the four cells that contain the winning
+    // 4-in-a-row pieces.
+    constructor(victor, victoryCells) {
         this.victor = victor;
-        this.draw = draw;
+        this.victoryCells = victoryCells;
+
+        // Make GameOver immutable
+        Object.freeze(this);
+        Object.freeze(this.victor);
+        Object.freeze(this.victoryCells);
     }
 }
 
@@ -69,13 +119,11 @@ class ConnectFour {
         // PLAYER_TWO) who has the next move.
         this.player = player;
 
-        // If the game is over, then this.victor equals PLAYER_ONE or PLAYER_TWO
-        // depending on who won the game.
-        // If the game is not over, then this.victor == undefined
-        this.victor = undefined;
 
-        // TODO: document
-        this.draw = undefined;
+        // If the game is over, then this.gameOver equals a GameOver object
+        // that describes the properties of the conclusion of the game
+        // If the game is not over, then this.gameOver is undefined.
+        this.gameOver = undefined;
     }
 
     deepCopy() {
@@ -87,8 +135,9 @@ class ConnectFour {
             }
         }
 
-        newGame.victor = this.victor;
-        newGame.draw = this.draw;
+        // We do not need to make a deepCopy of this.gameOver
+        // because this.gameOver is immutable
+        newGame.gameOver = this.gameOver;
 
         return newGame;
     }
@@ -99,19 +148,17 @@ class ConnectFour {
         assert(col >= 0 && col < this.numCols);
 
         if (this.matrix[row][col] != EMPTY ||
-            this.victor != undefined ||
+            this.gameOver != undefined ||
             (row < this.numRows - 1 && this.matrix[row + 1][col] == EMPTY))
             {
-            return new Move(false, undefined, undefined, undefined, undefined,
-                undefined);
+            return new Move(false, undefined, undefined, undefined, undefined);
         } 
 
         this.matrix[row][col] = this.player;
 
         this.checkGameOver();
 
-        var move =
-            new Move(true, row, col, this.player, this.victor, this.draw);
+        var move = new Move(true, row, col, this.player, this.gameOver);
 
         if (this.player == PLAYER_ONE) {
             this.player = PLAYER_TWO;
@@ -139,7 +186,9 @@ class ConnectFour {
         var c = this.getCellValue(row, col + 2);
         var d = this.getCellValue(row, col + 3);
         if (a == b && a == c && a == d) {
-            this.victor = a;
+            var victoryCells =
+                [[row, col], [row, col + 1], [row, col + 2], [row, col + 3]];
+            this.gameOver = new GameOver(a, victoryCells);
         }
     }
 
@@ -149,7 +198,9 @@ class ConnectFour {
         var c = this.getCellValue(row + 2, col);
         var d = this.getCellValue(row + 3, col);
         if (a == b && a == c && a == d) {
-            this.victor = a;
+            var victoryCells =
+                [[row, col], [row + 1, col], [row + 2, col], [row + 3, col]];
+            this.gameOver = new GameOver(a, victoryCells);
         }
     }
 
@@ -159,7 +210,10 @@ class ConnectFour {
         var c = this.getCellValue(row + 2, col + 2);
         var d = this.getCellValue(row + 3, col + 3);
         if (a == b && a == c && a == d) {
-            this.victor = a;
+            var victoryCells =
+                [[row, col], [row + 1, col + 1], [row + 2, col + 2],
+                 [row + 3, col + 3]];
+            this.gameOver = new GameOver(a, victoryCells);
         }
 
         var a = this.getCellValue(row, col);
@@ -167,7 +221,10 @@ class ConnectFour {
         var c = this.getCellValue(row + 2, col - 2);
         var d = this.getCellValue(row + 3, col - 3);
         if (a == b && a == c && a == d) {
-            this.victor = a;
+            var victoryCells =
+                [[row, col], [row + 1, col - 1], [row + 2, col - 2],
+                 [row + 3, col - 3]];
+            this.gameOver = new GameOver(a, victoryCells);
         }
     }
 
@@ -187,7 +244,7 @@ class ConnectFour {
             }
         }
 
-        this.draw = true;
+        this.gameOver = new GameOver(undefined, undefined);
     }
 
     checkGameOver() {
@@ -221,9 +278,8 @@ class Node {
     }
 
     isLeaf() {
-        return this.game.victor != undefined || this.game.draw != undefined; 
+        return this.game.gameOver != undefined;
     }
-
 
     countThreeHorizontal(player, row, col) {
         var beforeA = this.game.getCellValue(row, col -1);
@@ -418,13 +474,14 @@ class Node {
 
     // Player One is always the maximizing player
     getScore() {
-
-        if (this.game.draw == true) {
-            return 0;
-        } else if (this.game.victor == PLAYER_ONE) {
-            return Number.MAX_SAFE_INTEGER;
-        } else if (this.game_victor == PLAYER_TWO) {
-            return Number.MIN_SAFE_INTEGER;
+        if (this.gameOver != undefined) {
+            if (this.gameOver.victor == PLAYER_ONE) {
+                return Number.MAX_SAFE_INTEGER;
+            } else if (this.gameOver.victor == PLAYER_TWO) {
+                return Number.MIN_SAFE_INTEGER;
+            } else {
+                return 0;
+            }
         } else {
             return this.scorePlayer(this.game.player);
         }
@@ -525,10 +582,29 @@ class Viz {
 
         $("#" + cellId).append(imgTag);
 
-        if (move.victor == PLAYER_ONE) {
-            $(".cell").css("background-color", PLAYER_ONE_COLOR);
-        } else if (move.victor == PLAYER_TWO) {
-            $(".cell").css("background-color", PLAYER_TWO_COLOR);
+        if (move.gameOver != undefined &&
+            move.gameOver.victoryCells != undefined) {
+
+            var color;
+
+            if (move.gameOver.victor == PLAYER_ONE) {
+                color = PLAYER_ONE_COLOR;
+            } else if (move.gameOver.victor == PLAYER_TWO) {
+                color = PLAYER_TWO_COLOR;
+            } else {
+                assert(false);
+            }
+
+            for (var i = 0; i < move.gameOver.victoryCells.length; i++) {
+                var [row, col] = move.gameOver.victoryCells[i];
+
+                var cellId = Viz.getCellId(row, col);
+
+                $("#" + cellId).css("background-color", color);
+
+                $("#" + cellId).css("outline",  "black solid 2px");
+
+            }
         }
     }
 }
@@ -602,7 +678,7 @@ function minMax(node, depth, maximizingPlayer) {
 
 function makeAiMove(game) {
 
-    assert(game.victor == undefined && game.draw == undefined);
+    assert(game.gameOver == undefined);
 
     var node = new Node(game);
 
@@ -634,7 +710,7 @@ function cellClick(row, col) {
     var move = GAME.makeMove(row, col);
     VIZ.drawMove(move);
 
-    if (move.valid && GAME.victor == undefined && GAME.draw == undefined) {
+    if (move.valid && GAME.gameOver == undefined) {
 
         function doAiMove() {
             move = makeAiMove(GAME);
